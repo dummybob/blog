@@ -40,9 +40,9 @@ There is going to be some preparation required ahead of your move and it will re
 
 The first thing to do, would be to enable Maintenance Mode. n summary Maintenance Mode enables you to safely prepare your server for maintenance, allowing existing tasks to complete, and preventing changes you didn't expect.
 
-To enable or disable Maintenance Mode, go to **{{Configuration,Maintenance}}**.
+To enable or disable Maintenance Mode, go to **Configuration,Maintenance**.
 
-![Maintenance Mode Configuration](images/maintenance-mode.png)
+![Maintenance Mode Configuration](maintenance-mode.png)
 
 Only users with the `Administer System` permission can enable/disable Maintenance Mode.
 
@@ -66,6 +66,8 @@ For each node you have do the following:
 
 At this point, your Octopus server is ready to be moved to Azure and it will restore it in Azure with the nodes drained and if you enabled Maintenance Mode, then it will also have Maintenance mode enabled.
 
+![Drain nodes](drainnode.png)
+
 ### Backup your Master Key
 
 If you take one thing from this blog, please let it be this. Backup your Master Key, then back it up again, and then lastly, back it up once more.
@@ -79,17 +81,33 @@ Octopus [encrypts important and sensitive data](/docs/administration/security/da
 
 To see your Master Key, log on your Octopus Server, open up Octopus Server Manager and select View master key, and save this to your server as a txt file and then back it up to a Password Manager much like [LastPass](http://lastpass.com/) or [KeyPass](https://keepass.info/). 
 
-![Master Key backup](/masterkey.png)
+![Master Key backup](masterkey.png)
 
 ## Azure Architecture
 
-### Virtual Machines
+TODO - Add Azure Infra Diagram
+
+### Octopus Virtual Machines
+
+If you are going to a Highly-Available configuration then you are going to need to spin up two Virtual Machines in Azure to host Octopus. We don't have a one-size fits all spec for Octopus as it will depend on:
+
+- [Number and type of Deployment Targets](https://octopus.com/docs/administration/retention-policies)
+- [Retention Policies](https://octopus.com/docs/administration/retention-policies)
+- [Number of concurrent tasks](https://octopus.com/docs/support/increase-the-octopus-server-task-cap)
+
+If you have a fairly small workload in Octopus, then you can probably go for a smaller Virtual Machine but the Azure D Series Virtual Machines are a great place to start as they are for general purpose and fit most scenarios fairly well. Our recommendation would be to consider your workload and then use one of the D Series VM's and see how well this performs for you requirements. A good place to start is the []
 
 ### SQL Database
 
 #### Azure SQL vs SQL Virtual Machine
 
-### Shared storage
+### Storage
+
+#### Local Storage
+
+You are going to need some local storage for Octopus to be installed on
+
+#### Artifacts, Packages & Task Logs
 
 Octopus stores a number of files that are not suitable to store in the database. These include:
 
@@ -146,15 +164,19 @@ Install Octopus and then run the below.
 
 This one took me a bit of time to make a selection as there are a few options for balancing your loads in Azure. It will depend entirely on your preference and what your Network team have a preference for as there are so many option, and we are only listing a few of these below.
 
-* [Azure Traffic Manager](https://docs.microsoft.com/en-us/azure/traffic-manager/traffic-manager-overview)
-* [Azure Application Gateway](https://docs.microsoft.com/en-us/azure/application-gateway/overview)
-* [Azure Load Balancer](https://docs.microsoft.com/en-us/azure/load-balancer/load-balancer-overview)
-* [Kemp LoadMaster](https://kemptechnologies.com/uk/solutions/microsoft-load-balancing/loadmaster-azure/)
-* [F5 Big-IP Virtual Edition](https://www.f5.com/partners/technology-alliances/microsoft-azure)
+- [Azure Traffic Manager](https://docs.microsoft.com/en-us/azure/traffic-manager/traffic-manager-overview)
+- [Azure Application Gateway](https://docs.microsoft.com/en-us/azure/application-gateway/overview)
+- [Azure Load Balancer](https://docs.microsoft.com/en-us/azure/load-balancer/load-balancer-overview)
+- [Kemp LoadMaster](https://kemptechnologies.com/uk/solutions/microsoft-load-balancing/loadmaster-azure/)
+- [F5 Big-IP Virtual Edition](https://www.f5.com/partners/technology-alliances/microsoft-azure)
 
 My preference after evaluating the options on Azure
 
+###
+
 ### Networking
+
+I am going to keep
 
 ### How to Test for a working cluster
 
