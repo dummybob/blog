@@ -10,6 +10,7 @@ tags:
  - Product
 ---
 
+**TODO - Update image reference when received from Design**
 ![Image details](image.png)
 
 ## The Problem
@@ -26,11 +27,11 @@ Most organizations using Octopus, are still running it in a single node configur
 
 Unfortunately, [LetsEncrypt](https://letsencrypt.org/) SSL certificates are not supported automatically in a Highly-Available configuration, so if you are planning moving it to Azure, then you may need one from a [Certificate Authority](https://en.wikipedia.org/wiki/Certificate_authority).
 
-If you're hosting on-Premise, you will likely have Octopus Configured on the C or D Drive, under C:\Octopus or D:\Octopus with Logs, Artifacts, Packages and Task Logs hosted under folders locally or on a Network Attached Storage device.
+If you're hosting on-Premise, you will likely have Octopus Configured on the C or D Drive, under `C:\Octopus` or `D:\Octopus` with Logs, Artifacts, Packages and Task Logs hosted under folders locally or on a Network Attached Storage device.
 
-Your on-premise set-up probably looks something like:
+Your on-premise setup probably looks something like:
 
-TODO - Add in Infrastructure diagram of different parts of Octopus.
+**TODO - Add in Infrastructure diagram of different parts of Octopus.**
 
 ### Proof of Concept vs. Production move
 
@@ -47,12 +48,13 @@ There is going to be some preparation required ahead of your move. It will requi
 * [Create a SQL Database backup.](https://octopus.com/docs/support/get-a-database-backup-and-encrypt-the-master-key#step-by-step-guide)
 * [Run a backup of your Artifacts, Packages, and Tasklogs and then copy these up to Azure. We would recommend zipping these up into a single compressed file.](https://octopus.com/docs/administration/managing-infrastructure/server-configuration-and-file-storage#ServerconfigurationandFilestorage-FileStorageFilestorage)
 
-### Maintenance Mode
+### Enabling Maintenance Mode
 
 The first thing to do would be to enable Maintenance Mode. In summary, Maintenance Mode enables you to safely prepare your server for maintenance, allowing existing tasks to complete, and preventing changes you didn't expect.
 
-To enable or disable Maintenance Mode, go to **Configuration > Maintenance**.
+To enable Maintenance Mode, go to **Configuration > Maintenance**.
 
+**TODO Create Image**
 ![Maintenance Mode Configuration](maintenance-mode.png)
 
 Only users with the `Administer System` permission can enable/disable Maintenance Mode.
@@ -65,7 +67,7 @@ Once Octopus is in Maintenance Mode:
   * Tasks which were already queued (including [scheduled deployments](/docs/deployment-process/releases/index.md#scheduling-a-deployment)) will be started and run through to completion.
   * System tasks will still be queued and execute at their scheduled intervals. These kinds of tasks can be ignored since they are designed to be safe to cancel at any point in time.
 
-### Drain Nodes
+### Enabling Node Drain
 
 You also can stop all tasks from being executed on Octopus, and this becomes more useful if you're running Octopus in a Highly-Available configuration. Draining the nodes is helpful if you want to stop Octopus Administrators from running any tasks.
 
@@ -81,7 +83,7 @@ At this point, your Octopus server is ready to be moved to Azure, and it will re
 
 ### Backup your Master Key
 
-If you take one thing from this blog, please let it be this. **Backup your Master Key**, then back it up again, and then lastly, back it up once more.
+If you take one thing from this blog, please let it be this. **Backup, your Master Key**, then **back it up again**, and then lastly, **back it up once more**.
 
 Octopus [encrypts important and sensitive data](/docs/administration/security/data-encryption.md) using a master key. If you lose your master key, then you would lose:
 
@@ -96,11 +98,11 @@ To see your Master Key, log on your Octopus Server, open up Octopus Server Manag
 
 ## Azure Architecture
 
-TODO - Add Azure Infra Diagram
+**TODO - Add Azure Infra Diagram**
 
 ## Azure Resources
 
-For automating the spinning up of Azure Resources, a useful resource I use the [Azure Quickstart Tempmate](https://github.com/Azure/azure-quickstart-templates) and the one I use more often than not is the Simple VM for [Windows template](https://github.com/Azure/azure-quickstart-templates/tree/master/101-vm-simple-windows/)
+For automating the spinning up of Azure Resources, a useful resource I use the [Azure Quickstart Tempmate](https://github.com/Azure/azure-quickstart-templates), and the one I use more often than not is the Simple VM for [Windows template](https://github.com/Azure/azure-quickstart-templates/tree/master/101-vm-simple-windows/)
 
 ### Octopus Virtual Machines
 
@@ -114,18 +116,24 @@ If you have a reasonably small workload in Octopus, then you can probably go for
 
 ### SQL Database
 
-Octopus is underprinned by a SQL Database which stores environments, projects, variables, releases, and deployment history. You will need to spin up a SQL server in Azure and there are two options which you should consider and these are:
+Octopus is underpinned by a SQL Database that stores environments, projects, variables, releases, and deployment history. You will need to spin up a SQL server in Azure, and there are two options which you should consider, and these are:
 
 * [SQL Server on a Virtual Machine](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sql/virtual-machines-windows-sql-server-iaas-overview)
 * [Azure SQL Database as a Service](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-technical-overview)
 
-Octopus natively works with both of these options and we don't really have a preference and will be a decison you will need to make. If you have access to a Database Administrator, then I would seek out their expertise on the matter.
+Octopus natively works with both of these options, and we don't have a preference and will be a decision you will need to make. If you have access to a Database Administrator, then I would seek out their expertise on the matter.
 
 #### SQL Virtual Machine
 
+**TODO - Add benefits and how to spin up SQL Virtual Machine**
+
 #### Azure SQL
 
+**TODO - Add benefits and how to spin up Azure SQL**
+
 ### Storage
+
+**TODO - Add in details about the different types of storage.**
 
 #### Local Storage
 
@@ -194,18 +202,53 @@ This one took me a bit of time to make a selection as there are a few options fo
 * [Kemp LoadMaster](https://kemptechnologies.com/uk/solutions/microsoft-load-balancing/loadmaster-azure/)
 * [F5 Big-IP Virtual Edition](https://www.f5.com/partners/technology-alliances/microsoft-azure)
 
-My preference after evaluating the options on Azure is the Azure Load Balancer option as this is a feature ric
+My preference after evaluating the options on Azure is the Azure Load Balancer option as this is a feature-rich
 
 ### Networking
 
-Networking at the best of times is a contentiuous issue
+Networking at the best of times is a contentious issue, and your configuration will depend heavily on your existing network topology and standards.
+
+I'd consider implementing one or some of the below to help your protect your Azure workload:
+
+* [Azure Bastion](https://azure.microsoft.com/en-gb/services/azure-bastion/)
+* [VPN Gateway](https://azure.microsoft.com/en-gb/services/vpn-gateway/)
+* [ExpressRoute](https://azure.microsoft.com/en-gb/services/expressroute/)
+* [A Jump Box](https://en.wikipedia.org/wiki/Jump_server)
+
+I'd look to use existing methods to connect to Azure if you already have this in place. If you have ExpressRoute, then this is the best approach, but much like with anything, it's the most expensive. If you have a VPN Gateway, or a jump box or even Azure Bastion service, then I would recommend using these to your advantage.
 
 ## Octopus post-move tasks & verification
 
+Once you have configured Octopus, we would recommend running some verification of the configuration.
+
+### Azure Checklist
+
+A resource I find useful when provisioning Azure Infrastructure is the [Azure Checklist](http://azurechecklist.com/) as this contains almost everything you need to test and verify Azure Infrastructure.
+
+### Disabling Maintenance Mode
+
+To disable Maintenance Mode, go to **Configuration > Maintenance**. When maintenance mode is disabled, it will mean that Users can start deployments again, and we would recommend running some test deployments.
+
+### Disabling Node Drain
+
+Once you have disabled Maintenance Mode, then you will need to tell Octopus to run tasks again, and you do this for each node by doing the following:
+
+1. Go to **Configuration > Nodes** and disable node drain.
+
 ### Tentacles
+
+You are most likely using Tentacle for most of your deployments, and there are some things to consider as part of this.
 
 #### Listening Tentacles
 
+Listening Tentacles, for the most part, won't need any changes as the Octopus Server connects directly to them. If you are connecting to the servers on-Premise, then you may need to set up [NAT rules](https://en.wikipedia.org/wiki/Network_address_translation) to allow Octopus to communicate as it may have been using private IP's or DNS to connect.
+
 #### Polling Tentacles
 
-## Conclusion
+There will need to be some consideration for Polling Tentacles, and mostly this is to do with the tentacles connecting directly into the Octopus server using their DNS name. So if you were previously connecting to `octopus.domain.local` and now you have Octopus on `octopus.loadbalancedurl.com`, then you are going to need to update your polling tentacle to point to `octopus.loadbalancedurl.com`.
+
+You can achieve this by removing the previous configuration from Octopus and then automating the installation of the [Polling tentacle](https://octopus.com/docs/infrastructure/deployment-targets/windows-targets/automating-tentacle-installation#AutomatingTentacleinstallation-Example:PollingTentacle).
+
+## Summary
+
+**TODO - Add Summary**
