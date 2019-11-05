@@ -15,7 +15,7 @@ tags:
 
 ## The Problem
 
-Working as part of the Customer Success teams means we work with a range of customers from the smallest organizations using Octopus in a single [space](https://octopus.com/docs/administration/spaces) to working with Global companies with diverse, distributed technical teams who want to work with Octopus to deploy Infrastructure, Databases and their packaged applications.
+Working as part of the Customer Success teams means we work with a range of customers from the smallest organizations using Octopus in a single [Space](https://octopus.com/docs/administration/spaces) to working with Global companies with diverse, distributed technical teams who want to work with Octopus to deploy Infrastructure, Databases and their packaged applications.
 
 In today's cloud-native world, we see a lot of customers who want to move their Octopus workload from On-Premise data centers to Azure. With our recent license changes, which allow all new licenses the ability to be highly available, often the choice is to host Octopus in Azure. In this blog, we will cover how to move your existing Octopus instance to a highly available configuration in an Azure region.
 
@@ -159,7 +159,7 @@ Whichever way you provide the shared storage, a few considerations to keep in mi
 
 If your Octopus Server is running in Microsoft Azure, there is only one solution unless you have a [DFS Replica](https://docs.microsoft.com/en-us/windows-server/storage/dfs-replication/dfsr-overview) in Azure. That solution is [Azure File Storage](https://docs.microsoft.com/en-us/azure/storage/files/storage-files-introduction) - it just presents a file share over SMB 3.0 that will be shared across all of your Octopus servers.
 
-Once you have created your File Share, you can mount the drive for use by Octopus. Make sure to map a persistent network drive for the user account the Octopus Server is using.
+Once you have created your File Share, I find the best option is to add the Azure File Share as a symbolic link
 
 Run the below before installing Octopus.
 
