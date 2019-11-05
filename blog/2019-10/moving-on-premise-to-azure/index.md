@@ -66,7 +66,7 @@ For each node you have do the following:
 
 At this point, your Octopus server is ready to be moved to Azure and it will restore it in Azure with the nodes drained and if you enabled Maintenance Mode, then it will also have Maintenance mode enabled.
 
-![Drain nodes](drainnode.png)
+![Drain nodes](nodedrain.png)
 
 ### Backup your Master Key
 
