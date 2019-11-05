@@ -14,7 +14,7 @@ tags:
 
 ## The Problem
 
-Working as part of the Customer Success teams means we work with a range of customers from the smallest organizations using Octopus in a single space to working with Global companies with diverse, distributed technical teams who want to work with Octopus to deploy Infrastructure, Databases and their packaged applications. 
+Working as part of the Customer Success teams means we work with a range of customers from the smallest organizations using Octopus in a single [space](https://octopus.com/docs/administration/spaces) to working with Global companies with diverse, distributed technical teams who want to work with Octopus to deploy Infrastructure, Databases and their packaged applications.
 
 In today's cloud-native world, we see a lot of customers who want to move their Octopus workload from On-Premise data centers to Azure. With our recent license changes, which allow all new licenses the ability to be highly available, often the choice is to host Octopus in Azure. In this blog, we will cover how to move your existing Octopus instance to a highly available configuration in an Azure region.
 
@@ -40,18 +40,18 @@ One approach would be to move your existing Octopus instance and get this workin
 
 ## Prep work
 
-There is going to be some preparation required ahead of your move. It will require some time where Octopus is not going to be able to run deployments as we should:
+There is going to be some preparation required ahead of your move. It will require some time where Octopus is not going to be able to run deployments as you should:
 
-* Enable Maintenance Mode.
-* Drain all nodes.
-* Create a SQL Database backup.
-* Run a backup of your Artifacts, Packages, and Tasklogs and then copy these up to Azure.
+* Enable [Maintenance Mode](https://octopus.com/docs/administration/managing-infrastructure/maintenance-mode).
+* [Drain all nodes.](https://octopus.com/docs/administration/high-availability/managing-high-availability-nodes#ManagingHighAvailabilityNodes-Drain)
+* [Create a SQL Database backup.](https://octopus.com/docs/support/get-a-database-backup-and-encrypt-the-master-key#step-by-step-guide)
+* [Run a backup of your Artifacts, Packages, and Tasklogs and then copy these up to Azure. We would recommend zipping these up into a single compressed file.](https://octopus.com/docs/administration/managing-infrastructure/server-configuration-and-file-storage#ServerconfigurationandFilestorage-FileStorageFilestorage)
 
 ### Maintenance Mode
 
 The first thing to do would be to enable Maintenance Mode. In summary, Maintenance Mode enables you to safely prepare your server for maintenance, allowing existing tasks to complete, and preventing changes you didn't expect.
 
-To enable or disable Maintenance Mode, go to **Configuration,Maintenance**.
+To enable or disable Maintenance Mode, go to **Configuration > Maintenance**.
 
 ![Maintenance Mode Configuration](maintenance-mode.png)
 
@@ -71,7 +71,7 @@ You also can stop all tasks from being executed on Octopus, and this becomes mor
 
 For each node, you need to do the following:
 
-1. Go to **{{Configuration > Nodes}}** and put the node into drain mode.
+1. Go to **Configuration > Nodes** and put the node into drain mode.
 1. Wait for any remaining Octopus Tasks on that node to complete.
 1. Stop the Octopus Server windows service on that node.
 
@@ -81,7 +81,7 @@ At this point, your Octopus server is ready to be moved to Azure, and it will re
 
 ### Backup your Master Key
 
-If you take one thing from this blog, please let it be this. Backup your Master Key, then back it up again, and then lastly, back it up once more.
+If you take one thing from this blog, please let it be this. **Backup your Master Key**, then back it up again, and then lastly, back it up once more.
 
 Octopus [encrypts important and sensitive data](/docs/administration/security/data-encryption.md) using a master key. If you lose your master key, then you would lose:
 
@@ -98,19 +98,32 @@ To see your Master Key, log on your Octopus Server, open up Octopus Server Manag
 
 TODO - Add Azure Infra Diagram
 
+## Azure Resources
+
+For automating the spinning up of Azure Resources, a useful resource I use the [Azure Quickstart Tempmate](https://github.com/Azure/azure-quickstart-templates) and the one I use more often than not is the Simple VM for [Windows template](https://github.com/Azure/azure-quickstart-templates/tree/master/101-vm-simple-windows/)
+
 ### Octopus Virtual Machines
 
-If you are going to a Highly-Available configuration, then you are going to need to spin up two Virtual Machines in Azure to host Octopus. We don't have a one-size-fits-all spec for Octopus as it will depend on:
+When creating a Highly-Available configuration, you are going to need to spin up a minimum of two Virtual Machines in Azure to host Octopus. We don't have a one-size-fits-all spec for Octopus as it will depend on:
 
 * [Number and type of Deployment Targets](https://octopus.com/docs/administration/retention-policies)
 * [Retention Policies](https://octopus.com/docs/administration/retention-policies)
 * [Number of concurrent tasks](https://octopus.com/docs/support/increase-the-octopus-server-task-cap)
 
-If you have a reasonably small workload in Octopus, then you can probably go for a smaller Virtual Machine. Still, the Azure D Series Virtual Machines are a great place to start as they are for general purpose and fit most scenarios reasonably well. Our recommendation would be to consider your workload and then use one of the D Series VM's and see how well this performs for your requirements. An excellent place to start is the []
+If you have a reasonably small workload in Octopus, then you can probably go for a smaller Virtual Machine. Still, the Azure D Series Virtual Machines are a great place to start as they are for general purpose and fit most scenarios reasonably well. Our recommendation would be to consider your workload and then use one of the D Series VM's and see how well this performs for your requirements.
 
 ### SQL Database
 
-#### Azure SQL vs SQL Virtual Machine
+Octopus is underprinned by a SQL Database which stores environments, projects, variables, releases, and deployment history. You will need to spin up a SQL server in Azure and there are two options which you should consider and these are:
+
+* [SQL Server on a Virtual Machine](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sql/virtual-machines-windows-sql-server-iaas-overview)
+* [Azure SQL Database as a Service](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-technical-overview)
+
+Octopus natively works with both of these options and we don't really have a preference and will be a decison you will need to make. If you have access to a Database Administrator, then I would seek out their expertise on the matter.
+
+#### SQL Virtual Machine
+
+#### Azure SQL
 
 ### Storage
 
@@ -175,20 +188,24 @@ Install Octopus and then run the below.
 
 This one took me a bit of time to make a selection as there are a few options for balancing your loads in Azure. It will depend entirely on your preference and what your Network team has a choice for as there are so many options, and we are only listing a few of these below.
 
-- [Azure Traffic Manager](https://docs.microsoft.com/en-us/azure/traffic-manager/traffic-manager-overview)
-- [Azure Application Gateway](https://docs.microsoft.com/en-us/azure/application-gateway/overview)
-- [Azure Load Balancer](https://docs.microsoft.com/en-us/azure/load-balancer/load-balancer-overview)
-- [Kemp LoadMaster](https://kemptechnologies.com/uk/solutions/microsoft-load-balancing/loadmaster-azure/)
-- [F5 Big-IP Virtual Edition](https://www.f5.com/partners/technology-alliances/microsoft-azure)
+* [Azure Traffic Manager](https://docs.microsoft.com/en-us/azure/traffic-manager/traffic-manager-overview)
+* [Azure Application Gateway](https://docs.microsoft.com/en-us/azure/application-gateway/overview)
+* [Azure Load Balancer](https://docs.microsoft.com/en-us/azure/load-balancer/load-balancer-overview)
+* [Kemp LoadMaster](https://kemptechnologies.com/uk/solutions/microsoft-load-balancing/loadmaster-azure/)
+* [F5 Big-IP Virtual Edition](https://www.f5.com/partners/technology-alliances/microsoft-azure)
 
-My preference after evaluating the options on Azure
-
-###
+My preference after evaluating the options on Azure is the Azure Load Balancer option as this is a feature ric
 
 ### Networking
 
-I am going to keep
+Networking at the best of times is a contentiuous issue
 
-### How to Test for a working cluster
+## Octopus post-move tasks & verification
+
+### Tentacles
+
+#### Listening Tentacles
+
+#### Polling Tentacles
 
 ## Conclusion
