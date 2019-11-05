@@ -182,7 +182,7 @@ mklink /D C:\Octopus\Artifacts \\octostorage.file.core.windows.net\octoha\Artifa
 mklink /D C:\Octopus\Packages \\octostorage.file.core.windows.net\octoha\Packages
 ````
 
-Install Octopus and then run the below.
+[Install Octopus](https://octopus.com/docs/installation) and then run the below.
 
 ````powershell
 
