@@ -13,21 +13,22 @@ tags:
 **TODO - Update image reference when received from Design**
 ![Image details](image.png)
 
-New Octopus licenses include support for High Availability meaning teams can run multiple Octopus servers, distributing load and tasks between them. In this post, I’m going to share how to move an on-prem Octopus Server instance to a highly available instance running in Azure.
+All new Octopus licenses, from the 1st September 2019 support High Availability, meaning teams can run multiple Octopus servers, distributing load and tasks between them. In this post, I’m going to share how to move an on-prem Octopus Server instance to a highly available instance running in Azure.
 
 !toc
 
 ## The Problem
 
-Working as part of the Customer Success teams means we work with a range of customers from the smallest organizations using Octopus in a single [Space](https://octopus.com/docs/administration/spaces) to working with Global companies with diverse, distributed technical teams who want to work with Octopus to deploy Infrastructure, Databases and their packaged applications. In today's cloud-first world, we see a lot of customers who want to move their Octopus workload from On-Premise data centers to Azure
+Working as part of the Customer Success teams means we work with a range of customers from the smallest organizations using Octopus in a single [Space](https://octopus.com/docs/administration/spaces) to working with Global companies with diverse, distributed technical teams. These teams want to work with Octopus to deploy Infrastructure, Databases, and packaged applications. In today's cloud-first world, we see that these teams who scale their Octopus usage want to move their Octopus workload from On-Premise to Azure. An objective of this move is to ensure it is capable of high capacity, and fault-tolerant and High Availability is the only way to achieve this.
 
 ## The Solution
 
 [High Availability](https://octopus.com/docs/administration/high-availability) enables you to run multiple Octopus Deploy Servers, distributing load and tasks between them. High Availability has several benefits which include:
 
-* Better uptime guarantee for business critical workloads which reduces the chance of unexpected downtime.
+* Higher resilience for business-critical workloads
 * Simplifies maintenance tasks like server patching
 * Performance benefits
+* Reducing cost
 
 ## On-Premise Infrastructure
 
@@ -127,17 +128,17 @@ Octopus is underpinned by a SQL Database that stores environments, projects, var
 
 Octopus natively works with both of these options, and we don't have a preference and will be a decision you will need to make. If you have access to a Database Administrator, then I would seek out their expertise on the matter as they may be able to provide further insight.
 
-### SQL Virtual Machine vs Azure SQL
+### SQL Virtual Machine vs. Azure SQL
 
-I still see that most organizations are using Virtual Machines for when they are provisioning their SQL workload in the cloud and in this section I will go through the benefits of picking SQL VM's and some of the drawbacks.
+I still see that most organizations are using Virtual Machines for when they are provisioning their SQL workload in the cloud, and in this section, I will go through the benefits of picking SQL VM's and some of the drawbacks.
 
-As we are after a highly-available configuration Octopus, then we need to factor in high-availability at the SQL level as well as at the Octopus node level and what this means is that you are going to need a minimum of 2 SQL servers preferably in a [SQL cluster in Azure](https://techcommunity.microsoft.com/t5/Premier-Field-Engineering/Configure-SQL-Server-Failover-Cluster-Instance-on-Azure-Virtual/ba-p/371464), or an [Always On Availability Group](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sql/virtual-machines-windows-portal-sql-availability-group-tutorial) in Azure. For the most part, I am going to keep this part high-level as there are a lot of really great content on these topics out there already and you may have a Database Administrator, who will carry this out for you. If you have this already on Azure, then I would recommend using that setup to host Octopus, preferably on a dedicated SQL instance.
+As we are after a highly-available configuration Octopus, then we need to factor in high-availability at the SQL level. What this means is that you are going to need a minimum of 2 SQL servers, preferably in a [SQL cluster in Azure](https://techcommunity.microsoft.com/t5/Premier-Field-Engineering/Configure-SQL-Server-Failover-Cluster-Instance-on-Azure-Virtual/ba-p/371464), or an [Always On Availability Group](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sql/virtual-machines-windows-portal-sql-availability-group-tutorial) in Azure. For the most part, I am going to keep this part high-level as there is a lot of really great content on these topics out there already, and you may have a Database Administrator, who will carry this out for you. If you have this already on Azure, then I would recommend using that setup to host Octopus, preferably on a dedicated SQL instance.
 
-There are a number of benefits of using SQL Virtual Machines over Azure SQL and these are:
+There are several benefits of using SQL Virtual Machines over Azure SQL, and these are:
 
 * Greater flexibility
 * More control
-* Hosting multiple Database without additional cost.
+* Hosting multiple Databases without additional cost.
 
 Some of the drawbacks of using SQL Virtual Machines over Azure SQL:
 
@@ -145,16 +146,16 @@ Some of the drawbacks of using SQL Virtual Machines over Azure SQL:
 * Increased Setup time
 * Maintaining Infrastructure and Database(s)
 
-I spend a considerable amount of time doing Proof of Concepts, and I am a big fan of anything [PaaS](https://en.wikipedia.org/wiki/Platform_as_a_service) and particularly [Azure SQL Database Service](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-technical-overview), as I don't need to invest a considerable amount of time spinning up Virtual Machines's, Network Security Groups, Configuring SQL, Firewall rules, Maintenance plans and so forth. I can log on to the [Azure Portal](https://portal.azure.com/) and spin up a new SQL server, database and connection strings in the matter of minutes and if you have [ARM Templates](https://azure.microsoft.com/en-gb/resources/templates/) in place for this, it can take seconds. This is a huge time save for me but realise that this may not be for everyones preference just yet.
+I spend a considerable amount of time doing Proof of Concepts, and I am a big fan of anything [PaaS](https://en.wikipedia.org/wiki/Platform_as_a_service). I particularly like [Azure SQL Database Service](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-technical-overview), as I don't need to invest a considerable amount of time spinning up Virtual Machines's, Network Security Groups, Configuring SQL, Firewall rules, Maintenance plans and so forth. I can log on to the [Azure Portal](https://portal.azure.com/) and spin up a new SQL Server, Database, and connection strings in a matter of minutes and if you have [ARM Templates](https://azure.microsoft.com/en-gb/resources/templates/) in place for this, it can take seconds. [Infrastructure as Code](https://en.wikipedia.org/wiki/Infrastructure_as_code) is a huge time saver, but I realize that this may not be for everyone's preference just yet.
 
-When spinning up a database on Azure SQL, I can create a geo-replicated or locally-replicated database in a few moments and that's my database highly available. All I need to do now, is configure the Connection string for Octopus, and I am good to go.
+When spinning up a database on Azure SQL, I can create a geo-replicated or locally-replicated database in a few moments, and that's my DatabaseDatabase highly available. All I need to do now is configure the Connection string for Octopus, and I am good to go.
 
-There are a number of benefits of using Azure SQL over SQL Virtual Machines:
+There are many benefits of using Azure SQL over SQL Virtual Machines:
 
 * Easier to configure
 * Spin up and tear down as you require in seconds/minutes
 * Making the database highly-available is a couple of commands or clicks away.
-* Backup and Maintenance tasks are managed for you.
+* Managed Backup and Maintenance tasks.
 * Great Azure AQL Analytics and Monitoring built-in.
 
 Some of the drawbacks of using Azure SQL over SQL Virtual Machines:
@@ -164,21 +165,21 @@ Some of the drawbacks of using Azure SQL over SQL Virtual Machines:
 * Refactoring SQL scripts
 * Trying to understand what a [DTU](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-service-tiers-dtu) is.
 
-As you can see with both options, they have their merits and their drawbacks, and it's probably best if you give this some thought and pick the right solution for your, and your Organizational needs.
+As you can see with both options, they have their merits and their drawbacks, and it's probably best if you give this some thought and pick the right solution for you and your Organizational needs.
 
 ### Storage
 
-In a single node setup, you would normally host Octopus on [Local Storage](https://en.wikipedia.org/wiki/Local_storage) on either `C:\Octopus` or `D:\Octopus` and you're still going to need some local storage for Octopus unless you decide to present an Azure File Share as a mapped drive or as a Symbolic link to the server. Our recommendation is to host your logs and configuration of Octopus locally on the server as it avoids any potential issues with accidentally pointing all of your Octopus nodes logs location to the same file, which would cause file locking issues and cause the Octopus server to stop until you resolved it.
+In a single node setup, you would typically host Octopus on [Local Storage](https://en.wikipedia.org/wiki/Local_storage) on either `C:\Octopus` or `D:\Octopus`. You're going to need some local storage for Octopus unless you decide to present an Azure File Share as a mapped drive or as a Symbolic link to the server. Our recommendation is to host your logs and configuration of Octopus locally on the server. It avoids any potential issues with accidentally pointing all of your Octopus nodes logs location to the same file, which would cause file locking issues and cause the Octopus server to stop until you resolved it.
 
 ### Artifacts, Packages & Task Logs
 
-Octopus stores several files that are not suitable to store in the database. These include:
+Octopus stores several files that are not suitable to store in the Database. These include:
 
 * NuGet packages used by the [built-in NuGet repository](https://octopus.com/docs/packaging-applications/package-repositories) inside Octopus. These packages can often be substantial.
 * Artifacts collected during a deployment. Teams using Octopus sometimes use this feature to collect large log files and other files from machines during a deployment.
 * Task logs, which are text files that store all of the log output from deployments and other tasks.
 
-As with the database, from the Octopus perspective, you'll tell the Octopus Servers where to store them as a file path within your operating system. Octopus doesn't care what technology you use to present the shared storage; it could be a mapped network drive or a UNC path to a file share. Each of these three types of data can be stored in a different place.
+As with the Database, from the Octopus perspective, you'll tell the Octopus Servers where to store them as a file path within your operating system. Octopus doesn't care what technology you use to present the shared storage; it could be a mapped network drive or a UNC path to a file share. Each of these three types of data is stored in a different place.
 
 Whichever way you provide the shared storage, a few considerations to keep in mind:
 
@@ -188,9 +189,9 @@ Whichever way you provide the shared storage, a few considerations to keep in mi
 
 ### Azure Files
 
-If your Octopus Server is running in Microsoft Azure, there is only one solution unless you have a [DFS Replica](https://docs.microsoft.com/en-us/windows-server/storage/dfs-replication/dfsr-overview) in Azure. That solution is [Azure File Storage](https://docs.microsoft.com/en-us/azure/storage/files/storage-files-introduction) - it just presents a file share over SMB 3.0 that will be shared across all of your Octopus servers.
+If your Octopus Server is running in Microsoft Azure, there is only one solution unless you have a [DFS Replica](https://docs.microsoft.com/en-us/windows-server/storage/dfs-replication/dfsr-overview) in Azure. That solution is [Azure File Storage](https://docs.microsoft.com/en-us/azure/storage/files/storage-files-introduction) - it just presents a file share over SMB 3.0 that will is shared across all of your Octopus servers.
 
-Once you have created your File Share, I find the best option is to add the Azure File Share as a [symbolic link](https://en.wikipedia.org/wiki/Symbolic_link) and then adding this in to `C:\Octopus\` for the Artifacts, Packages and TaskLogs which need to be shared between your Octopus nodes.
+Once you have created your File Share, I find the best option is to add the Azure File Share as a [symbolic link](https://en.wikipedia.org/wiki/Symbolic_link) and then adding this in to `C:\Octopus\` for the Artifacts, Packages, and TaskLogs which need to be available to all nodes.
 
 Run the below before installing Octopus.
 
@@ -224,7 +225,7 @@ mklink /D C:\Octopus\Packages \\octostorage.file.core.windows.net\octoha\Package
 
 ### Load Balancer
 
-This one took me a bit of time to make a selection as there are a few options for balancing your loads in Azure. It will depend entirely on your preference and what your Network team has a choice for as there are so many options, and we are only listing a few of these below.
+This one took me a bit of time to make a selection as there are a few options for balancing your loads in Azure. It will depend entirely on your preference and what your Network team prefers, as are many options, and we are only listing a few of these below.
 
 * [Azure Traffic Manager](https://docs.microsoft.com/en-us/azure/traffic-manager/traffic-manager-overview)
 * [Azure Application Gateway](https://docs.microsoft.com/en-us/azure/application-gateway/overview)
@@ -245,7 +246,7 @@ Networking at the best of times is a contentious issue, and your configuration w
 
 I'd look to use existing methods to connect to Azure if you already have this in place. If you have ExpressRoute, then this is the best approach, but much like with anything, it's the most expensive. If you have a VPN Gateway, or a jump box or even Azure Bastion service, then I would recommend using these to your advantage.
 
-The biggest recommendation I can make here, is to reduce your [surface of attack](https://en.wikipedia.org/wiki/Attack_surface) whilst keeping your networking as straight forward as you can without causing any potential security issues.
+The biggest recommendation I can make here is to reduce your [surface of attack](https://en.wikipedia.org/wiki/Attack_surface) while keeping your networking as straight forward as you can without causing any potential security issues.
 
 * Where possible, try and use [Internal IP's and networks](https://en.wikipedia.org/wiki/Private_network) over Public IP's, particularly for your SQL configuration.
 * Use a VPN or a Jump/Bastion box. Preferably both.
@@ -267,23 +268,23 @@ Once you have disabled Maintenance Mode, then you will need to tell Octopus to r
 
 ## Tentacles
 
-You are most likely using Tentacle for most of your deployments, and there are some things to consider as part of this.
+Most Organizations are using the Octopus Tentacle to deploy their applications, and there are some considerations here.
 
 ### Listening Tentacles
 
-Listening Tentacles, for the most part, won't need any changes as the Octopus Server connects directly to the tentacle. If you are connecting to the servers on-Premise, then you may need to set up [NAT rules](https://en.wikipedia.org/wiki/Network_address_translation) or a VPN or ExpressRoute to allow Octopus to communicate as it may have been using private IP's or DNS to connect.
+Listening Tentacles, for the most part, won't need any changes as the Octopus Server connects directly to the Tentacle. If you are connecting to the servers on-Premise, then you may need to set up [NAT rules](https://en.wikipedia.org/wiki/Network_address_translation) or a VPN or ExpressRoute to allow Octopus to communicate as it may have been using private IP's or DNS to connect.
 
 ### Polling Tentacles
 
-Listening Tentacles require no special configuration for High Availability.  Polling Tentacles, however, poll a server at regular intervals to check if there are any tasks waiting for the Tentacle to perform. In a High Availability scenario Polling Tentacles must poll all of the Octopus Servers in your configuration. You could poll a load balancer but there is a risk, depending on your load balancer configuration, that the Tentacle will not poll all servers in a timely manner.  You could also configure the Tentacle to poll each server by registering it with one of your Octopus Servers and then adding each Octopus Server to the Tentacle.config file. There are two options to add Octopus Servers, via the command line or via editing the Tentacle.config file directly:
+Listening Tentacles require no special configuration for High Availability.  Polling Tentacles, however, poll a server at regular intervals to check if any tasks are waiting for the Tentacle to perform. In a High Availability scenario, Polling Tentacles must poll all of the Octopus Servers in your configuration. You could poll a load balancer, but there is a risk, depending on your load balancer configuration, that the Tentacle will not poll all servers promptly.  You could also configure the Tentacle to poll each server by registering it with one of your Octopus Servers and then adding each Octopus Server to the Tentacle.config file. There are two options to add Octopus Servers, via the command line or via editing the `Tentacle.config.` file directly:
 
-Configuring the Tentacle via the command line is the preferred option with the command executed once per server; and it can be automated rather than doing each configuration manually and an example command using the default instance can be seen below:
+Configuring the Tentacle via the command line is the preferred option with the command executed once per server, and it can be automated rather than doing each configuration manually, and an example command using the default instance is below:
 
 ```cmd
 C:\Program Files\Octopus Deploy\Tentacle>Tentacle poll-server --server=http://Octopus.Company.com --apikey=API-77751F90F9EEDCEE0C0CD84F7A3CC726AD123FA6
 ```
 
-For more information on this command please check out the [Tentacle Poll Server options document](https://octopus.com/docs/octopus-rest-api/tentacle.exe-command-line/poll-server)
+For more information on this command, please check out the [Tentacle Poll Server options document](https://octopus.com/docs/octopus-rest-api/tentacle.exe-command-line/poll-server)
 
 ## Octopus verification
 
@@ -297,4 +298,4 @@ A resource I find useful when provisioning Azure Infrastructure is the [Azure Ch
 
 ## Summary
 
-As you can see, there is quite a lot to consider when moving from On-Premise to Azure
+As you can see, there is quite a lot to consider when moving from On-Premise to Azure.
