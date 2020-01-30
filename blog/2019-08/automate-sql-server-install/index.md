@@ -158,7 +158,7 @@ We want the PowerShell script to:
 5. Capture the output from the installer and write it to the shell.
 6. Dismount the image.
 
-**Please Note**: The PowerShell script is going to run an installer. As such, you must run this script as an admin.
+**Please note**: The PowerShell script is going to run an installer. As such, you must run this script as an admin.
 
 ```PowerShell
 

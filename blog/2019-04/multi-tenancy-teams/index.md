@@ -20,7 +20,7 @@ They have three teams of developers and four main applications. There are some d
 
 Team B has a higher priority as it is in the middle of fixing bugs. When can Team A push the new feature for Application A in order for the QA engineers to test and business owners to verify? Is it possible to do it before Team B is finished without stepping all over their work? How can Team C make changes to their application without stopping Team B?
 
-**Please Note**: I paraphrased that meeting quite a bit, my apologies to them if they're reading this and I oversimplified their concerns.
+**Please note**: I paraphrased that meeting quite a bit, my apologies to them if they're reading this and I oversimplified their concerns.
 
 I ran into this scenario multiple times at different jobs before working at Octopus Deploy. At those companies, the collective lack of knowledge, as well as the tooling limitations, led to some, let's say, unusual solutions. Team C was told that whatever changes they made had to be backward compatible. Hide it behind a feature flag if that is what it takes. Work cannot stop for Teams A and B. Team A was told to hold off pushing their changes until Team B had finished their work. Depending on how long that took, Team A might try to sneak in a few minor changes as well, increasing the scope of their changes and causing more work for QA.
 
@@ -93,7 +93,7 @@ First I am going to create a couple of variables in Global to store the environm
 
 ![](environment-short-name-global-variable.png)
 
-**Please Note:** I like to use the naming scheme [VariableSet].[Component].[Name]. It makes it easier to find when trying to reference them. Moreover, when looking at all variables for a project, they are easier to find.
+**Please note**: I like to use the naming scheme [VariableSet].[Component].[Name]. It makes it easier to find when trying to reference them. Moreover, when looking at all variables for a project, they are easier to find.
 
 Then I am going to jump over to the `Variable Templates` tab and add a new template. This will be populated when tenants are created and assigned to various projects.
 

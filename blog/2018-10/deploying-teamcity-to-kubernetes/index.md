@@ -242,7 +242,7 @@ After the load balancer is complete lets click on the URL.  If all goes well we 
 
 Alright, things are coming along.  However, we have a slight problem.  Each time Octopus Deploy does a deployment it will destroy the node and recreate it.  That means the data directory in the above screenshot will be cleared out.  The end result is we have to recreate the TeamCity configuration each time.  That is...just awful.  What kind of build server is that?  
 
-**Please Note:** This is not caused by Octopus Deploy, it is a feature of Kubernetes.  By default, it assumes pods can be destroyed and recreated whenever needed.
+**Please note**: This is not caused by Octopus Deploy, it is a feature of Kubernetes.  By default, it assumes pods can be destroyed and recreated whenever needed.
 
 What we need is to persist that data between deployments.  Thankfully, Kubernetes already has that functionality.  We just need to tap into it.  
 
