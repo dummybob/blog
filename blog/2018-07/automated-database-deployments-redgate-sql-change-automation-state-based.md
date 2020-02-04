@@ -126,26 +126,26 @@ The full value of the variable is:
 
 Other recommendations on this screen:
 - I have supplied the username and password.  I recommend using integrated security and having the Tentacle running as a specific service account.  I don’t have Active Directory setup on my test machine so I used SQL Users for this demo.
-- Take a look at the [default SQL Compare Options](https://documentation.red-gate.com/sr1/using-sql-compare-options-in-sql-release/default-sql-compare-options-used-by-sql-release) and make sure they match what you need.  If they don’t, you need to supply the ones you want in the `SQL Compare Options (optional)` variable.  You can view the documentation [here](https://documentation.red-gate.com/sc11/using-the-command-line/options-used-in-the-command-line).  If you do decide to use custom options, I recommend creating a variable in a [library variable set](https://octopus.com/docs/deployment-process/variables/library-variable-sets) so those options can be shared across many projects.
+- Take a look at the [default SQL Compare Options](https://documentation.red-gate.com/sr1/using-sql-compare-options-in-sql-release/default-sql-compare-options-used-by-sql-release), and make sure they match what you need.  If they don’t, you need to supply the ones you want in the `SQL Compare Options (optional)` variable.  You can view the documentation [here](https://documentation.red-gate.com/sc11/using-the-command-line/options-used-in-the-command-line).  If you do decide to use custom options, I recommend creating a variable in a [library variable set](https://octopus.com/docs/deployment-process/variables/library-variable-sets) so those options can be shared across many projects.
 - Use a custom filter in the event you want to limit what the deployment process can change.  I wrote a lengthy blog post on how to do that [here](https://www.codeaperture.io/2016/10/13/using-sql-source-control-to-filter-out-unwanted-items/).  My personal preference is to filter out all users and let the DBAs manage them.  Even better, let Octopus manage them since it can handle environmental differences.
 
-The next step is approving the database release. I recommend creating a custom team to be responsible for this.  My preference is to skip this step in dev and QA.
+The next step is approving the database release. I recommend creating a custom team to be responsible for this, but I prefer to skip this step in dev and QA:
 
 ![](octopus-approve-database-changes.png)
 
-The create database release step makes use of the artifact functionality built into Octopus Deploy. This allows the approver to download the files and review them.
+The create database release step makes use of the artifact functionality built into Octopus Deploy. This allows the approver to download the files and review them:
 
 ![](octopus-database-artifacts.png)
 
-The final step is deploying the database release.  This step takes the delta script in the export data path and runs it on the target server.  This is why I recommend putting the export path in a variable.
+The final step is deploying the database release.  This step takes the delta script in the export data path and runs it on the target server, which is why I recommend putting the export path in a variable:
 
 ![](octopus-deploy-database-release.png)
 
-That is it for the Octopus Deploy configuration.  Now it is time to move on to the build server.
+That’s it for the Octopus Deploy configuration. Now it's time to move on to the build server.
 
 ### Build server configuration
 
-For this blog post, I will be using VSTS/TFS and TeamCity.  The build should, at a least, do the following:
+For this blog post, I use VSTS/TFS and TeamCity.  At a minimum, the build should do the following:
 
 1. Build a NuGet package containing the database state using the Redgate plug-in.
 2. Push that package to Octopus Deploy using the Octopus Deploy plug-in.
@@ -154,11 +154,11 @@ For this blog post, I will be using VSTS/TFS and TeamCity.  The build should, at
 
 #### VSTS / TFS build
 
-Only three steps are needed in VSTS/TFS to build and deploy a database.  
+Only three steps are needed in VSTS/TFS to build and deploy a database:
 
 ![](vsts-build-database-overview.png)
 
-The first step will build the database package from source control.  The items highlighted are the ones you need to change.  The subfolder path variable is relative.  I am using sample Git repo which is why I have the "RedgateSqlChangeAutomationStateBased" folder in the path.
+The first step will build the database package from source control.  The highlighted items are the ones you need to change.  The subfolder path variable is relative.  I am using sample Git repo which is why the "RedgateSqlChangeAutomationStateBased" folder is in the path:
 
 ![](vsts-build-database-package.png)
 
@@ -166,66 +166,66 @@ The push package to Octopus step can be a little tricky.  You need to know the f
 
 ![](vsts-push-database-package.png)
 
-Here is the full value in case you wish to copy it.
+Here is the full value if you’d like to copy it:
 
 ```
     $(Build.Repository.Localpath)\RandomQuotes-SQLChangeAutomation.1.0.$(Build.BuildNumber).nupkg
 ```
 
-The Octopus Deploy Server must be configured in VSTS/TFS.  You can see how to do that by going to our [documentation](https://octopus.com/docs/api-and-integration/tfs-vsts/using-octopus-extension).
+The Octopus Deploy server must be configured in VSTS/TFS.  You can see how to do that by going to our [documentation](https://octopus.com/docs/api-and-integration/tfs-vsts/using-octopus-extension).
 
-The last step is to create a release and deploy it to dev.  After connecting, VSTS/TFS with Octopus Deploy you will be able to read all the project names.  You can also configure this step to deploy the release to Dev.  Clicking the "Show Deployment Progress" will stop the build and force it to wait on Octopus to complete.
+The last step is to create a release and deploy it to dev.  After connecting, VSTS/TFS with Octopus Deploy you can read all the project names.  You can also configure this step to deploy the release to dev.  Clicking the **Show Deployment Progress** will stop the build and force it to wait for Octopus to complete:
 
 ![](vsts-create-octopus-database-release.png)
 
 #### TeamCity
 
-The TeamCity setup is very similar to the VSTS/TFS setup.  Only three steps are needed.
+The TeamCity setup is very similar to the VSTS/TFS setup.  Only three steps are needed:
 
 ![](teamcity-build-sql-automation-overview.png)
 
-The first step, the build database package step, has similar options to VSTS/TFS.  You will need to enter in the folder as well as the name of the package.
+The first step, the build database package step, has similar options to VSTS/TFS.  You will need to enter the folder as well as the name of the package:
 
 ![](teamcity-redgate-build-database.png)
 
-The kicker is you have to enter in a package version in the advanced options.  If you don’t then you will start getting random errors from the Redgate tooling saying something about an invalid package version.
+You have to enter in a package version in the advanced options, otherwise you will get errors from the Redgate tooling about an invalid package version:
 
 ![](teamcity-redgate-build-advanced-options.png)
 
-The publish package step requires all three of the options to be populated.  By default, the Redgate tool will create the NuGet package in the root working directory.
+The publish package step requires all three of the options to be populated.  By default, the Redgate tool will create the NuGet package in the root working directory:
 
 ![](teamcity-publish-package.png)
 
-The final step is creating and deploying the release.  Very similar to before, you provide the name of the project, the release number and the environment you wish to deploy to.
+The final step is creating and deploying the release. Similar to before, you provide the name of the project, the release number, and the environment you are deploying to.
 
 ![](teamcity-create-database-release.png)
 
 ## The CI/CD pipeline in action
-Now it is time to see all of this in action.  For this demo, I will be creating a new database, RandomQuotes_BlogPost_Dev.
+Now it is time to see all of this in action.  For this demo, I create a new database, *RandomQuotes_BlogPost_Dev*:
 
 ![](octopus-first-database-release-variables.png)
 
-As you can see I do not have any databases with that name.  You can see I have used this SQL Server as my test bench for automated deployments.
+As you can see, I do not have any databases with that name. I have used this SQL Server as my test bench for automated deployments:
 
 ![](ssms-before-deployment.png)
 
-Let’s take a quick look at the tables stored in source control.  
+Let’s take a quick look at the tables stored in source control:
 
 ![](github-tables-to-be-created.png)
 
-If we open up one of those files we can see the create script generated by Redgate’s SQL Source Control.
+If we open up one of those files, we can see the create script generated by Redgate’s SQL Source Control:
 
 ![](github-database-quote-table.png)
 
-Kick off a build and let’s see that whole pipeline in action.  The build looks successful.
+Kick off a build and let’s see that whole pipeline in action.  The build looks successful:
 
 ![](vsts-build-first-time.png)
 
-No surprise, the deployment was successful in Octopus Deploy.  The VSTS/TFS build was set to wait on Octopus Deploy to finish deploying the database.  If the deployment failed the build would’ve failed.
+No surprise, the deployment was successful in Octopus Deploy.  The VSTS/TFS build was set to wait on Octopus Deploy to finish deploying the database.  If the deployment failed the build would’ve failed:
 
 ![](octopus-first-database-release.png)
 
-Going back to SSMS and we can now see the database and the tables have been created.
+Going back to SSMS and we can now see the database and the tables have been created:
 
 ![](database-successful-deployment-ssms.png)
 
