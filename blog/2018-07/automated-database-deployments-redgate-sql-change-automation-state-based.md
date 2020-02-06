@@ -25,7 +25,7 @@ For this demo, you need a running SQL Server instance, an Octopus Deploy instanc
 
 ## Tools needed
 
-You will need the following tools. The examples given use TeamCity and VSTS/TFS.  As you will see later, the core concepts and UI for all the CI tools are very similar.  
+You will need the following tools. The examples given use TeamCity and VSTS/TFS, but even if you’re using a different tool, the core concepts and UI for all the CI tools are very similar.  
 
 - Octopus Deploy:
     - [Free license for Octopus Cloud or Octopus Server](https://octopus.com/free)
@@ -48,9 +48,10 @@ You will need the following tools. The examples given use TeamCity and VSTS/TFS.
 If you run into issues installing any of these tools, please go to the vendor’s website for help.  If you need any help installing Octopus Deploy please start with our [docs](https://octopus.com/docs/installation) or contact [support](mailto:support@octopus.com).
 
 ### Developer machine
+
 This is the machine you will use to make the schema changes and check them into source control.  When you install Redgate’s SQL Tool-belt, you will be prompt to install quite a bit of software.  You only need to install the following:
 - SQL Source Control
-- SQL Prompt (it isn’t required, but it makes your life so much easier)
+- SQL Prompt (it isn’t required, but it makes things much easier)
 - SSMS Integration Pack
 
 ### Build server
@@ -79,7 +80,7 @@ For the jump box, you need to install the following items:
 
 ## Sample project
 
-For this walk-through, I modified the RandomQuotes project. The source code for this sample can be found in this [GitHub repo](https://github.com/OctopusDeploy/AutomatedDatabaseDeploymentsSamples).  You need to fork this repository so you can make modifications to it later in this article.
+For this walk-through, I modified the RandomQuotes project. The source code for this sample can be found in this [GitHub repo](https://github.com/OctopusDeploy/AutomatedDatabaseDeploymentsSamples).  Fork the repository so you can make modifications as you follow this article.
 
 ## Configuring the CI/CD pipeline
 
@@ -87,11 +88,11 @@ Everything you need is already checked into source control.  All we need to do i
 
 ### Octopus Deploy configuration
 
-You need the step templates from Redgate to [create a database release](http://library.octopus.com/step-templates/c20b70dc-69aa-42a1-85db-6d37341b63e3/actiontemplate-redgate-create-database-release) and [deploy a database release](http://library.octopus.com/step-templates/7d18aeb8-5e69-4c91-aca4-0d71022944e8/actiontemplate-redgate-deploy-from-database-release).  When you are browsing the step template you might notice the step template to [deploy directly from a package](http://library.octopus.com/step-templates/19f750fb-2ce8-4361-859e-2dfcdf08a952/actiontemplate-redgate-deploy-from-package).  The state-based functionality for SQL Change Automation works by comparing the state of the database stored in the NuGet package with the destination database.  Each time it runs, it creates a new set of delta scripts to apply, and the recommended process is:
+You need the step templates from Redgate to [create a database release](http://library.octopus.com/step-templates/c20b70dc-69aa-42a1-85db-6d37341b63e3/actiontemplate-redgate-create-database-release) and [deploy a database release](http://library.octopus.com/step-templates/7d18aeb8-5e69-4c91-aca4-0d71022944e8/actiontemplate-redgate-deploy-from-database-release).  When you browse the step template you might notice the step template to [deploy directly from a package](http://library.octopus.com/step-templates/19f750fb-2ce8-4361-859e-2dfcdf08a952/actiontemplate-redgate-deploy-from-package).  The state-based functionality for SQL Change Automation works by comparing the state of the database stored in the NuGet package with the destination database.  Each time it runs, it creates a new set of delta scripts to apply. The recommended process is:
 
-1. Download the database package onto the jump box.
-2. Create the delta script by comparing the package on the jump box with the database on SQL Server.
-3. Review the delta script (can be skipped in dev).
+1. Download the database package to the jump box.
+2. Create the delta script by comparing the package on the jump box with the database on the SQL Server.
+3. Review the delta script (this can be skipped in dev).
 4. Run the script on SQL Server using the Tentacle on the jump box.
 
 Using the step template to deploy from the package prevents the ability to review the scripts.  
@@ -100,7 +101,7 @@ This is the process I have put together for deploying databases.
 
 ![](octopus-database-deployment-overview.png)
 
-This process creates the main SQL user for the database, the database, add the SQL user to the database, and the user to the role.  If you want your process to do that, you can download those step templates from the [Octopus Community Step Template Library](http://library.octopus.com/listing).  
+This process creates the main SQL user for the database, the database, adds the SQL user to the database, and the user to the role.  If you want your process to do that, you can download those step templates from the [Octopus Community Step Template Library](http://library.octopus.com/listing).  
 
 If this is the beginning of your automated database deployment journey, you don’t have to add all that functionality. The main steps you need from the above screenshot are:
 
@@ -110,7 +111,7 @@ Let’s walk through each one.  The download a package step is very straightforw
 
 ![](octopus-database-download-package.png)
 
-The Redgate - Create Database Release step is a little more interesting.  What trips most people up is the Export Path.  The export path is where the delta script will be exported to.  This needs to be a directory outside of the Octopus Deploy Tentacle folder.  This is because the **Redgate - Deploy from Database Release** step needs access to that path and the Tentacle folder will be different for each step:
+The Redgate - Create Database Release step is a little more interesting.  What trips most people up is the **Export Path**.  The export path is the location the delta script will be exported to.  This must be a directory outside of the Octopus Deploy Tentacle folder.  This is because the **Redgate - Deploy from Database Release** step needs access to that path and the Tentacle folder will be different for each step:
 
 ![](octopus-create-database-release-step.png)
 
@@ -141,7 +142,7 @@ The final step is deploying the database release.  This step takes the delta scr
 
 ![](octopus-deploy-database-release.png)
 
-That’s it for the Octopus Deploy configuration. Now it's time to move on to the build server.
+That’s it for the Octopus Deploy configuration. Now it’s time to move on to the build server.
 
 ### Build server configuration
 
@@ -158,11 +159,11 @@ Only three steps are needed in VSTS/TFS to build and deploy a database:
 
 ![](vsts-build-database-overview.png)
 
-The first step will build the database package from source control.  The highlighted items are the ones you need to change.  The subfolder path variable is relative.  I am using sample Git repo which is why the "RedgateSqlChangeAutomationStateBased" folder is in the path:
+The first step will build the database package from source control.  The highlighted items are the ones you need to change.  The subfolder path variable is relative.  I am using sample Git repo which is why the _RedgateSqlChangeAutomationStateBased_ folder is in the path:
 
 ![](vsts-build-database-package.png)
 
-The push package to Octopus step can be a little tricky.  You need to know the full path to the artifact generated by the previous step.  I’m not 100% sure how you would know without trial and error.  
+The push package to Octopus step requires you to know the full path to the artifact generated by the previous step.  I’m not 100% sure how you would know without trial and error:
 
 ![](vsts-push-database-package.png)
 
@@ -172,7 +173,7 @@ Here is the full value if you’d like to copy it:
     $(Build.Repository.Localpath)\RandomQuotes-SQLChangeAutomation.1.0.$(Build.BuildNumber).nupkg
 ```
 
-The Octopus Deploy server must be configured in VSTS/TFS.  You can see how to do that by going to our [documentation](https://octopus.com/docs/api-and-integration/tfs-vsts/using-octopus-extension).
+The Octopus Deploy server must be configured in VSTS/TFS.  You can see how to do that in our [documentation](https://octopus.com/docs/api-and-integration/tfs-vsts/using-octopus-extension).
 
 The last step is to create a release and deploy it to dev.  After connecting, VSTS/TFS with Octopus Deploy you can read all the project names.  You can also configure this step to deploy the release to dev.  Clicking the **Show Deployment Progress** will stop the build and force it to wait for Octopus to complete:
 
@@ -188,7 +189,7 @@ The first step, the build database package step, has similar options to VSTS/TFS
 
 ![](teamcity-redgate-build-database.png)
 
-You have to enter in a package version in the advanced options, otherwise you will get errors from the Redgate tooling about an invalid package version:
+You have to enter a package version in the advanced options, otherwise you will get errors from the Redgate tooling about an invalid package version:
 
 ![](teamcity-redgate-build-advanced-options.png)
 
@@ -196,7 +197,7 @@ The publish package step requires all three of the options to be populated.  By 
 
 ![](teamcity-publish-package.png)
 
-The final step is creating and deploying the release. Similar to before, you provide the name of the project, the release number, and the environment you are deploying to.
+The final step is creating and deploying the release. Similar to before, you provide the name of the project, the release number, and the environment you are deploying to:
 
 ![](teamcity-create-database-release.png)
 
@@ -213,7 +214,7 @@ Let’s take a quick look at the tables stored in source control:
 
 ![](github-tables-to-be-created.png)
 
-If we open up one of those files, we can see the create script generated by Redgate’s SQL Source Control:
+If we open one of those files, we can see the create script generated by Redgate’s SQL Source Control:
 
 ![](github-database-quote-table.png)
 
@@ -231,13 +232,13 @@ Going back to SSMS and we can now see the database and the tables have been crea
 
 ## Changing the schema
 
-Well, that is all well and good but that was a project already created.  Let’s make a small change and test the whole process.  There is a bit more setup involved with doing this.
+That works with an existing project, but let’s make a small change and test the process. There is a bit more setup involved with this:
 
 1. Clone your forked repo to your local machine.
 2. Open up SSMS and create a random quotes database on your local machine or dev.
 3. In SSMS bind the source controlled database to the newly created database.  You can read how to do that in the [documentation](https://www.red-gate.com/products/sql-development/sql-source-control/resources/how-to-set-up-sql-source-control).
 
-When linking the database to source control you need to provide the full path to the folder where the source control is stored.  I store all my code in a folder called C:\Code.git.  So the full path is:
+When linking the database to source control you need to provide the full path to the folder where the source control is stored.  I store all my code in a folder called C:\Code.git. The full path is:
 
 ![](ssms-redgate-linked-database-path.png)
 
@@ -247,23 +248,21 @@ Here is the text of that path for you to copy:
 C:\Code.git\AutomatedDatabaseDeploymentsSamples\RedGateSqlChangeAutomationStateBased\db\src\
 ```
 
-Once you are finished you should see something like this:
-
 ![](ssms-redgate-successful-link.png)
 
-Now we can make the change to the database.  For this test, let’s just add in a stored procedure which will return a value.
+Now we can make the change to the database.  For this test, let’s just add in a stored procedure which will return a value:
 
 ![](ssms-sample-sproc.png)
 
-Now we can commit that change to source control.
+Now we can commit that change to source control:
 
 ![](ssms-sample-commit.png)
 
-And assuming the CI/CD build is set to fire on commit you should see that new sproc appears in Dev!  
+Assuming the CI/CD build is set to fire on commit, you should see that new sproc appears in dev.
 
 ## Conclusion
 
-Automating database deployments does require a bit of prep-work but the payoff is well worth the effort.  Having the auditing alone is well worth it.  With this tool, I can now see who made a change, when a change was made and when that change went into production.  In the past, that was kept in another location with a 50/50 shot of it being updated.
+Automating database deployments does require a bit of prep-work but the payoff is well worth the effort.  Having the auditing alone is well worth it.  With this tool, I can now see who made a change, when a change was made, and when that change went into production.  In the past, that was kept in another location with a 50/50 shot of it being updated.
 
 As you start down this journey my recommendation is to add the manual verification step to all environments until trust has been established.  This will ensure you don’t accidentally check in a change which blows away half the team’s database changes.  
 
