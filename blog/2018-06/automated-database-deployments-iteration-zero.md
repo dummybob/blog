@@ -11,7 +11,7 @@ tags:
  - Database Deployments
 ---
 
-Hopefully after reading the [automated database deployments kick-off post](/blog/2018-06/automated-database-deployments-series-kick-off.md) you’re ready to dive into automated database deployments. Depending on your company, automating database deployments could be a large change which could cause friction.  Friction is the enemy of change; the higher the friction, the slower the adoption.  The goal of this post is to help remove that friction.  
+Hopefully after reading the [automated database deployments kick-off post](/blog/2018-06/automated-database-deployments-series-kick-off.md) you’re ready to dive into automated database deployments. Depending on your company, automating database deployments could be a large change, and it could cause friction.  Friction is the enemy of change; the higher the friction, the slower the adoption.  The goal of this post is to help remove that friction.  
 
 This post demonstrates the principles with Microsoft SQL Server, but those same principles still apply to your database technology of choice.
 
@@ -25,7 +25,7 @@ Deploying databases can be very complex, and there are multiple approaches. Octo
 
 ### #1 Model-driven approach
 
-With the model-driven approach, the desired state of the database is defined.  The state is saved into source control.  During the deployment, the tool will compare the desired state with the deployment target and generate a delta script.  This process will be done for each environment.
+With the model-driven approach, the desired state of the database is defined.  The state is saved into source control.  During the deployment, the tool compares the desired state with the deployment target and generates a delta script.  This process will be done for each environment.
 
 ![](model-driven-approach.png)
 
@@ -33,7 +33,7 @@ The database desired state is stored as files in source control. Depending on th
 
 #### Model-driven pros
 
-The tooling for model-driven approach often integrates with your IDE.  For example, Redgate’s tooling integrates with SQL Server Management Studio, and Microsoft’s SSDT tooling integrates with Visual Studio.  The changes to the schema are made using the IDE, and then the plug-in for the IDE takes over.  It runs a comparison to determine the difference between the change and what is currently in source control.  Then it makes the change to the necessary script on the file system.
+The tooling for the model-driven approach often integrates with your IDE.  For example, Redgate’s tooling integrates with SQL Server Management Studio, and Microsoft’s SSDT tooling integrates with Visual Studio.  The changes to the schema are made using the IDE, and then the plug-in for the IDE takes over.  It runs a comparison to determine the difference between the change and what is currently in source control.  Then it makes the change to the necessary script on the file system.
 
 All the file system interaction happens behind the scenes.  The tool keeps track of the all the changes, and this allows you to focus on making the database changes and testing them.  After you’re done testing those changes, you use the tool to update the files in source control.  
 
@@ -44,9 +44,9 @@ A unique delta script is generated during deployment per environment.  This is b
 
 The tooling will want to control everything about the database, from the tables to the schemas to the users.  You must configure the tool to ignore certain parts of the database.
 
-As smart as the tooling is, it has a difficult time handling more complex changes.  For example, when moving a column from one table to another the tool doesn’t know that’s your intention, and it will drop the column from the old table and create a new empty column in the new table.  The tooling will often include some sort of migration script ability where you can write your own migration scripts, but the migration scripts have their own rules you must abide by.  
+As smart as the tooling is, it has a difficult time handling more complex changes.  For example, when moving a column from one table to another the tool doesn’t know that’s your intention, and it will drop the column from the old table and create a new empty column in the new table.  The tooling will often include some sort of migration script functionality where you can write your own migration scripts, but the migration scripts have their own rules you must follow.  
 
-The lack of control can be a bit of a burden sometimes.  You might end up creating a custom process that works alongside the tool.  For example, the tool might not support post deployment scripts, and in order to get that, you would have to create a post deploy folder which can be packaged and sent to Octopus.  You would then have to update your process in Octopus to look for the folder and run any scripts it finds.  It works, but now you are responsible for maintaining that process.
+The lack of control can be a burden at times.  You might end up creating a custom process that works alongside the tool.  For example, the tool might not support post deployment scripts, and in order to get that, you would have to create a post deploy folder which can be packaged and sent to Octopus.  You would then have to update your process in Octopus to look for the folder and run any scripts it finds.  It works, but now you are responsible for maintaining that process.
 
 ### #2 Change-driven approach
 A change-driven approach is where all the necessary delta scripts are handwritten.  This is also known as migrations.  Those scripts are checked into source control.  During the deployment, the tool will look to see which change scripts have not been run on the destination database and run them in a specific order.  
@@ -61,7 +61,7 @@ The model-driven approach ensures the entire destination database matches the de
 
 It is much harder to see the history of a specific object like a table or a stored procedure.  Instead of going to a single file and viewing the history you must do a search to find all the files where the object was changed.  Depending on the number of table changes, it could be easy to miss a key change and not even know it.  
 
-Finally, a lot of developers are not expert SQL developers.  They are used to using SQL Server Management Studio UI to create tables and indexes.  They don’t know how to write a lot of the changes being made by hand.  It takes a lot of practice to get the T-SQL syntax memorized.  In the case where the tool allows you to write code for more complex changes, there is another learning curve to understand the syntax and the rules.
+Finally, a lot of developers are not expert SQL developers.  They are used to using the SQL Server Management Studio UI to create tables and indexes.  They don’t know how to write a lot of the changes being made by hand.  It takes a lot of practice to get the T-SQL syntax memorized.  In the case where the tool allows you to write code for more complex changes, there is another learning curve to understand the syntax and the rules.
 
 ### Picking an approach
 
@@ -74,7 +74,7 @@ The model-driven approach works best when any of the following apply:
 - Your company is first getting into automating database deployments.
 - Your code base consists of mature databases with very little expected changes.
 - You want to force developers to follow the process automatically (if a change is made to a destination database and it is not checked in it will get deleted; that only needs to happen once before a person learns).
-- The majority of the developers who will be making the changes lack the experience at making complex T-SQL Statements.
+- The majority of the developers who will be making the changes lack the experience at making complex T-SQL statements.
 
 The change-driven approach works best when:
 
@@ -118,17 +118,17 @@ During the deployment it created the artifacts automatically:
 The artifacts help build that trust by not allowing an approval process, but it also provides an audit history.  In three months, I could come back to this deployment and view what changed on the database.
 
 ### Permissions
-When implementing automated database deployments, a common question I heard was "how can we prevent someone from inserting a script to give themselves sysadmin privileges?"  Using the artifacts is a good start, but it doesn’t completely solve the problem.  If the DBA, or the person doing the approval, is swamped, they could easily miss that specific SQL statement in the artifact.  The best way to prevent that from happening is to restrict the permission on the account doing the deployment.  [Our documentation](https://octopus.com/docs/deployment-examples/sql-server-databases#SQLServerdatabases-Permissions) provides several examples, from the least restrictive to the most restrictive.  Keep in mind, those are recommendations.  I encourage talking to your team to determine what you are comfortable with.
+When implementing automated database deployments, a common question I heard was, “how can we prevent someone from inserting a script to give themselves sysadmin privileges?”  Using the artifacts is a good start, but it doesn’t completely solve the problem.  If the DBA, or the person doing the approval, is swamped, they could easily miss that specific SQL statement in the artifact.  The best way to prevent that from happening is to restrict the permission on the account doing the deployment.  [Our documentation](https://octopus.com/docs/deployment-examples/sql-server-databases#SQLServerdatabases-Permissions) provides several examples, from the least restrictive to the most restrictive.  Keep in mind, those are recommendations.  I encourage talking to your team to determine what you are comfortable with.
 
 ## Where to install the Tentacle
 
-You don’t want to install the Tentacle directly on the SQL Server.  SQL Server is often a cluster or a high-availability group, and the Tentacles will try to apply the changes to all the nodes at the same time.  You do not want to have the Tentacles being used to deploy Windows services or IIS web applications handle database deployments.  Those Tentacles could be in a DMZ.  The Tentacle should be running under a specific service account with the necessary permissions to perform the deployment.  The majority of the tools make use of port 1433 and simply run a series of T-SQL Scripts.  The Tentacle can be installed on any machine as long as it has a connection to the database.  For those reasons, I recommend you make use of a jump box which sits between Octopus Deploy and SQL Server.  
+You don’t want to install the Tentacle directly on the SQL Server.  SQL Server is often a cluster or a high-availability group, and the Tentacles will try to apply the changes to all the nodes at the same time.  You do not want to have the Tentacles being used to deploy Windows services or IIS web applications handle database deployments.  Those Tentacles could be in a DMZ.  The Tentacle should be running under a specific service account with the necessary permissions to perform the deployment.  The majority of the tools make use of port 1433 and simply run a series of T-SQL scripts.  The Tentacle can be installed on any machine as long as it has a connection to the database.  For those reasons, I recommend you make use of a jump box which sits between Octopus Deploy and SQL Server.  
 
 Please refer to [our documentation](https://octopus.com/docs/deployment-examples/sql-server-databases#SQLServerdatabases-Tentacles) for more information.
 
 ## Conclusion
 
-At first glance, this feels like a lot of prep-work, but the important thing to remember is these are guidelines.  Don’t spend weeks discussing and debating, come up with an initial plan and iterate.  At the start of this process, we spent about two days discussing and working through an initial plan.  
+At first glance, this feels like a lot of prep-work, but the important thing to remember is these are guidelines.  Don’t spend weeks discussing and debating, come up with an initial plan and iterate.  At the start of this process, we spent about two days discussing and working through our initial plan.  
 
 My recommendation for rolling this out is:
 
@@ -136,7 +136,7 @@ My recommendation for rolling this out is:
 2. Establish a pilot team to iterate through any issues.
 3. Wait for the pilot team to have several successful deployments to production.
 4. Roll this out to other projects one at a time.  Don’t be surprised if each time you roll it out to a new project you come across something new that requires a change of some sort.  
-5. Don’t be afraid to reach out and ask experts.  We can provide some initial guidance, but in some cases you will need more help.  In that case, there are several companies out there who provide consulting services and are happy to help.
+5. Don’t be afraid to reach out and ask experts.  We can provide some initial guidance, but sometimes, you will need more help.  In that case, there are several companies out there who provide consulting services and are happy to help.
 
 ---
 
